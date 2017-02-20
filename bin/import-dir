@@ -1,0 +1,66 @@
+#!/usr/bin/env node
+'use strict';
+
+const fs = require('fs'),
+			path = require('path'),
+			async = require('async');
+const spawn = require('child_process').spawn;
+const import_path = './stormpath-exports/accounts';
+
+const walkSync = (dir, filelist = []) => {
+  fs.readdirSync(dir).forEach(file => {
+
+    filelist = fs.statSync(path.join(dir, file)).isDirectory()
+      ? walkSync(path.join(dir, file), filelist)
+      : filelist.concat(path.join(dir, file));
+
+  });
+
+	return filelist;
+}
+
+const import_file = (file, done) => {
+	const import_dirs = spawn('./bin/import-json', [file]);
+
+	import_dirs.stdout.on('data', (data) => {
+	  console.log(`stdout: ${data}`);
+	});
+
+	import_dirs.stderr.on('data', (data) => {
+	  console.log(`stderr: ${data}`);
+	});	
+
+	import_dirs.on('close', (code) => {
+	  console.log(`import_dirs child process exited with code ${code}`);
+	});
+}
+
+const files = walkSync(import_path);
+
+async.eachLimit (files, 5,
+// 	function (file) {
+		import_file
+//		console.log('\n--------------------\n', file, '\n--------------------\n');
+//	}
+)
+
+/*
+for (let file of files) {
+  import_file(file);
+	console.log('\n--------------------\n', file, '\n--------------------\n');
+}
+
+for (var i = 0, len = files.length; i < len; i++) {
+  import_file(files[i]);
+	console.log('\n--------------------\n', files[i], '\n--------------------\n');
+}
+
+files.forEach(
+	function (file) {
+		import_file(file);
+		console.log('\n--------------------\n', file, '\n--------------------\n');
+	}
+);
+*/
+
+//const file = path.join(import_path, '4Hn8oVE9Nm6jK4abttGUhy/accounts/1ZhtoCAux9XNiqt7LKxsKq.json');
