@@ -5,7 +5,7 @@ const fs = require('fs'),
 			path = require('path'),
 			async = require('async');
 const spawn = require('child_process').spawn;
-const import_path = './stormpath-exports/accounts';
+const import_path = './stormpath-exports';
 
 const walkSync = (dir, filelist = []) => {
   fs.readdirSync(dir).forEach(file => {
@@ -19,7 +19,9 @@ const walkSync = (dir, filelist = []) => {
 	return filelist;
 }
 
-const import_file = (file, done) => {
+const files = walkSync(import_path);
+
+const import_file = (file) => {
 	const import_dirs = spawn('./bin/import-json', [file]);
 
 	import_dirs.stdout.on('data', (data) => {
@@ -35,32 +37,7 @@ const import_file = (file, done) => {
 	});
 }
 
-const files = walkSync(import_path);
-
-async.eachLimit (files, 5,
-// 	function (file) {
-		import_file
-//		console.log('\n--------------------\n', file, '\n--------------------\n');
-//	}
-)
-
-/*
 for (let file of files) {
   import_file(file);
 	console.log('\n--------------------\n', file, '\n--------------------\n');
 }
-
-for (var i = 0, len = files.length; i < len; i++) {
-  import_file(files[i]);
-	console.log('\n--------------------\n', files[i], '\n--------------------\n');
-}
-
-files.forEach(
-	function (file) {
-		import_file(file);
-		console.log('\n--------------------\n', file, '\n--------------------\n');
-	}
-);
-*/
-
-//const file = path.join(import_path, '4Hn8oVE9Nm6jK4abttGUhy/accounts/1ZhtoCAux9XNiqt7LKxsKq.json');
